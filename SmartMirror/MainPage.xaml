@@ -1,0 +1,134 @@
+﻿<Page
+    x:Class="SmartMirror.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SmartMirror"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    DataContext="{Binding RelativeSource={RelativeSource Self}}">
+
+    <Grid Background="Black">
+
+        <!-- Current Weather -->
+        <StackPanel x:Name="CurrentWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,15,0">
+            <TextBlock Text="{x:Bind CurrentWeather.Location}" FontSize="60" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="63"/>
+            <TextBlock Text="{x:Bind CurrentWeather.Date}" FontSize="25" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="28"/>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Image Source="{x:Bind CurrentWeather.WeatherIcon}" Height="80" Width="80" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBlock Text="{x:Bind CurrentWeather.Temperature}" Margin="0,0,0,0"  FontSize="100" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Padding="0"></TextBlock>
+                <StackPanel Orientation="Vertical" Height="105">
+                    <TextBlock FontSize="100" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Left" Margin="0,0,0,0" Height="65">°</TextBlock>
+                    <TextBlock Text="{x:Bind CurrentWeather.HighTemp}" FontSize="15" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Margin="0" VerticalAlignment="Top"/>
+                    <TextBlock Text="{x:Bind CurrentWeather.LowTemp}" FontSize="15" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Margin="0"  VerticalAlignment="Top"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Todays Weather -->
+        <StackPanel x:Name="TodaysWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,0,0" Orientation="Vertical">
+            <TextBlock Text="{x:Bind TodaysWeather.Location}" FontSize="60" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="64"/>
+            <TextBlock Text="{x:Bind TodaysWeather.Date}" FontSize="25" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="28"/>
+            <ListView ItemsSource="{x:Bind TodaysWeather.WeatherDays}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4" HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center"  Margin="0,0,0,0">
+                            <TextBlock Text="{Binding Path=Time}" FontSize="16" Width="72" FontFamily="CenturyGothic" Foreground="Snow" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Path=Temperature}" FontSize="40" FontFamily="CenturyGothic" Foreground="Snow" HorizontalAlignment="Center"/>
+                            <Image Source="{Binding Path=WeatherIcon}" Height="32" Width="32" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <!-- Todays Weather -->
+        <StackPanel x:Name="TomorrowsWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,15,0" Orientation="Vertical">
+            <TextBlock Text="{x:Bind TomorrowsWeather.Location}" FontSize="60" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="63"/>
+            <TextBlock Text="{x:Bind TomorrowsWeather.Date}" FontSize="25" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="28"/>
+            <ListView ItemsSource="{x:Bind TomorrowsWeather.WeatherDays}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="4" HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center"  Margin="0,0,0,0">
+                            <TextBlock Text="{Binding Path=Time}" FontSize="16" Width="72" FontFamily="CenturyGothic" Foreground="Snow" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding Path=Temperature}" FontSize="40" FontFamily="CenturyGothic" Foreground="Snow" HorizontalAlignment="Center"/>
+                            <Image Source="{Binding Path=WeatherIcon}" Height="32" Width="32" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+
+            <Button x:Name="AddressContentDialogBtn"
+                    Content="Show Address Dialog"
+                    Click="ShowAddressContentDialog"
+                    Margin="0,4" Visibility="Collapsed"/>
+
+            <ContentDialog x:Name="AddressContentDialog"
+                           VerticalAlignment="Stretch"
+                           Title="Address Information"
+                           PrimaryButtonText="Okay"
+                           SecondaryButtonText="Cancel"
+                           MaxWidth="{Binding ActualWidth, ElementName=pageRoot}">
+                <StackPanel x:Name="AddressInfo" HorizontalAlignment="Left" Height="220" Width="300"
+                            Margin="0,0,0,0">
+                    <!-- Home Address Stack Panel -->
+                    <StackPanel Height="64">
+                        <StackPanel Orientation="Horizontal" Width="{Binding ActualWidth, ElementName=AddressInfo}" Margin="0,0,0,0">
+                            <TextBlock x:Name="HomeAddressTextBlock" VerticalAlignment="Center" FontSize="12" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Home Address:" Width="92"/>
+                            <TextBox x:Name="HomeAddress" PlaceholderText="Address" Width="208"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBox x:Name="HomeCity" PlaceholderText="City"/>
+                                <TextBox x:Name="HomeState" PlaceholderText="State"/>
+                                <TextBox x:Name="HomeZipCode" PlaceholderText="Zip Code"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <!-- Work Address Stack Panel -->
+                    <StackPanel Height="74">
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Width="{Binding ActualWidth, ElementName=AddressInfo}">
+                            <TextBlock x:Name="WorkAddressTextBlock" VerticalAlignment="Center" FontSize="12" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Work Address:" Width="92"/>
+                            <TextBox x:Name="WorkAddress" PlaceholderText="Address" Width="208"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBox x:Name="WorkCity" PlaceholderText="City"/>
+                                <TextBox x:Name="WorkState" PlaceholderText="State"/>
+                                <TextBox x:Name="WorkZipCode" PlaceholderText="Zip Code"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <!-- School Address Stack Panel -->
+                    <StackPanel Height="74">
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Width="{Binding ActualWidth, ElementName=AddressInfo}">
+                            <TextBlock x:Name="SchoolAddressTextBlock" VerticalAlignment="Center" FontSize="12" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="School Address:" Width="92"/>
+                            <TextBox x:Name="SchoolAddress" PlaceholderText="Address" Width="208"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBox x:Name="SchoolCity" PlaceholderText="City"/>
+                                <TextBox x:Name="SchoolState" PlaceholderText="State"/>
+                                <TextBox x:Name="SchoolZipCode" PlaceholderText="Zip Code"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ContentDialog>
+        </StackPanel>
+    </Grid>
+</Page>
