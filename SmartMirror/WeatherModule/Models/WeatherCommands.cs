@@ -12,6 +12,8 @@
 
         public const string CMD_HIDE = "HIDE";
 
+        public const string TIME_CURRENT = "CURRENT";
+
         public const string TIME_TODAY = "TODAY";
 
         public const string TIME_TOMORROW = "TOMORROW";

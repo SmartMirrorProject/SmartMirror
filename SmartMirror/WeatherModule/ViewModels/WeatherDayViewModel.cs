@@ -1,58 +1,105 @@
 ﻿using System;
 using System.Collections.Generic;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
 using SmartMirror.MainModule;
 using SmartMirror.WeatherModule.Models;
 
 namespace SmartMirror.WeatherModule.ViewModels
 {
-    public class WeatherDayViewModel : BindableBase
+    public class WeatherDayViewModel : BindableBase, IWeatherViewModel
     {
-        private WeatherDay weather;
-
-        public List<WeatherDayVM> WeatherDays; 
-
-        public WeatherDayViewModel(WeatherDay weather)
+        public WeatherDayViewModel()
         {
-            SetWeather(weather);
-            WeatherDays = ConvertToViewModels(weather.WeatherDays);
+            string s = "Not Init";
+            Visible = Visibility.Collapsed;
+            Location = s;
+            Date = s;
+            ReadTime = s;
+            
+            //Create a default list with a single weather hour in it to avoid exceptions.
+            string currentIcon = "02d"; //This is just a default.
+            BitmapImage weatherIcon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + currentIcon + ".png"));
+            List<WeatherHourViewModel> defaultList = new List<WeatherHourViewModel> { new WeatherHourViewModel(s, s, weatherIcon) };
+            WeatherHours = defaultList;
         }
 
-        public String Location => weather.WeatherLocation.City + ", " + weather.WeatherLocation.State;
-
-        public String Date => weather.Date.ToString("D");
-
-        public String ReadTime => weather.ReadTime.ToString("t");
-        
-        public void SetWeather(WeatherDay weather)
+        public WeatherDayViewModel(string loc, string date, string read, List<WeatherHourViewModel> hours)
         {
-            if (null == weather) throw new ArgumentException("This class cannot be passed a null WeatherCurrent object.");
-            this.weather = weather;
+            Visible = Visibility.Collapsed;
+            Location = loc;
+            Date = date;
+            ReadTime = read;
+            WeatherHours = hours;
         }
 
-        private List<WeatherDayVM> ConvertToViewModels(List<BasicWeather> days)
+        private Visibility visibility;
+        public Visibility Visible
         {
-            List<WeatherDayVM> viewModels = new List<WeatherDayVM>();
-            foreach (BasicWeather day in days)
+            get { return visibility; }
+            set
             {
-                WeatherDayVM dayVM = new WeatherDayVM(day);
-                viewModels.Add(dayVM);
+                visibility = value;
+                OnPropertyChanged();
             }
-            return viewModels;
-        } 
+        }
+
+        private List<WeatherHourViewModel> weatherHours;
+        public List<WeatherHourViewModel> WeatherHours
+        {
+            get { return weatherHours; }
+            set
+            {
+                weatherHours = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string location;
+        public string Location
+        {
+            get { return location; }
+            set
+            {
+                location = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string date;
+        public string Date
+        {
+            get { return date; }
+            set
+            {
+                date = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string readTime;
+        public string ReadTime
+        {
+            get { return readTime; }
+            set
+            {
+                readTime = value;
+                OnPropertyChanged();
+            }
+        }
     }
 
-    public class WeatherDayVM
+    public class WeatherHourViewModel
     {
-        public WeatherDayVM(BasicWeather weather)
+        public WeatherHourViewModel(string time, string temp, BitmapImage icon)
         {
-            Time = weather.Time.ToString("h:mm tt");
-            Temperature = "" + Math.Round(weather.Temperature) + "°";
-            WeatherIcon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + weather.IconId + ".png"));
+            Time = time;
+            Temperature = temp;
+            WeatherIcon = icon;
         }
 
-        public String Time { get; }
-        public String Temperature { get; }
-        public BitmapImage WeatherIcon { get; }
+        public string Temperature { get; set; }
+        public string Time { get; set; }
+        public BitmapImage WeatherIcon { get; set; }
     }
 }

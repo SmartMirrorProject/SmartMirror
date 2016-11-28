@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<grammar
+  version="1.0"
+  xml:lang="en-US"
+  root="voiceCommands"
+  xmlns="http://www.w3.org/2001/06/grammar"
+  tag-format="semantics/1.0">
+
+  <rule id="voiceCommands">
+    <item>
+      <ruleref uri="#clockCommands"/>
+      <tag>out.clockCommand=rules.clockCommands;</tag>
+    </item>
+  </rule>
+
+  <rule id="clockCommands">
+    <item>
+      <item> mirror </item>
+      <item> show </item>
+      <one-of>
+        <!-- CLOCK/TIME as/in FORMAT -->
+        <item>
+          <item>
+            <ruleref uri="#targetActions" />
+            <tag> out.target=rules.latest(); </tag>
+          </item>
+          <item>
+            <ruleref uri="#formatActions" />
+            <tag> out.format=rules.latest(); </tag>
+          </item>
+        </item>
+        
+        <!-- FORMAT CLOCK/TIME -->
+        <item>
+          <item>
+            <ruleref uri="#formatActions" />
+            <tag> out.format=rules.latest(); </tag>
+          </item>
+          <item>
+            <ruleref uri="#targetActions" />
+            <tag> out.target=rules.latest(); </tag>
+          </item>          
+        </item>
+      </one-of>
+    </item>
+  </rule>
+
+  <!-- Clock Format Options -->
+  <rule id="formatActions">
+    <one-of>
+      <item>
+        twelve hour <tag> out="12HR" </tag>
+      </item>
+      <item>
+        standard <tag> out="12HR" </tag>
+      </item>
+      <item>
+        twenty four hour <tag> out="24HR" </tag>
+      </item>
+      <item>
+        military <tag> out="24HR" </tag>
+      </item>
+    </one-of>
+  </rule>  
+  
+  <!--  Target For Command  -->
+  <rule id="targetActions">
+    <one-of>
+      <item>
+        clock <tag> out="CLOCK"; </tag>
+      </item>
+      <item>
+        time <tag> out="CLOCK"; </tag>
+      </item>
+    </one-of>
+  </rule>
+  
+
+</grammar>

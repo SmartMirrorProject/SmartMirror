@@ -17,13 +17,10 @@
   <rule id="weatherCommands">
     <item>
       <item> mirror </item>
+      <item> show </item>
       <one-of>
-        <!-- SHOW TOMORROW's WEATHER -->
+        <!-- TOMORROW's WEATHER -->
         <item>
-          <item>
-            <ruleref uri="#weatherCommandActions" />
-            <tag> out.cmd=rules.latest(); </tag>
-          </item>
           <item>
             <ruleref uri="#timeFrameActions" />
             <tag> out.timeFrame=rules.latest(); </tag>
@@ -33,12 +30,8 @@
             <tag> out.target=rules.latest(); </tag>
           </item>
         </item>
-        <!--SHOW the WEATHER for TOMORROW-->
+        <!-- the WEATHER for TOMORROW-->
         <item>
-          <item>
-            <ruleref uri="#weatherCommandActions" />
-            <tag> out.cmd=rules.latest(); </tag>
-          </item>
           <item>
             <ruleref uri="#targetActions" />
             <tag> out.target=rules.latest(); </tag>
@@ -52,21 +45,12 @@
     </item>
   </rule>
 
-  <!--  Weather Actions  -->
-  <rule id="weatherCommandActions">
-    <one-of>
-      <item>
-        show <tag> out="SHOW"; </tag>
-      </item>
-      <item>
-        hide <tag> out="HIDE"; </tag>
-      </item>
-    </one-of>
-  </rule>
-
   <!--  Weather Time Frames  -->
   <rule id="timeFrameActions">
     <one-of>
+      <item>
+        current <tag> out="CURRENT" </tag>
+      </item>
       <item>
         tomorrow <tag> out="TOMORROW"; </tag>
       </item>
@@ -93,6 +77,9 @@
     <one-of>
       <item>
         weather <tag> out="WEATHER"; </tag>
+      </item>
+      <item>
+        forecast <tag> out="WEATHER"; </tag>
       </item>
     </one-of>
   </rule>

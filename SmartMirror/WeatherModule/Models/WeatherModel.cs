@@ -1,14 +1,34 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media.Imaging;
 using SmartMirror.LocationModule;
+using SmartMirror.VoiceControlModule;
+using SmartMirror.WeatherModule.ViewModels;
 
 namespace SmartMirror.WeatherModule.Models
 {
-    class WeatherModel
+    public class WeatherModel : IVoiceControllableModule
     {
-        public WeatherCurrent CurrentWeather { get; set; }
-        public WeatherDay TodaysWeather { get; set; }
-        public WeatherDay TomorrowsWeather { get; set; }
-        public WeatherWeek WeeksWeather { get; set; }
+        private IWeatherViewModel currentlyVisible;
+        private readonly WeatherCurrentViewModel currentWeather;
+        private readonly WeatherDayViewModel todaysWeather;
+        private readonly WeatherDayViewModel tomorrowsWeather;
+        private readonly WeatherWeekViewModel weeksWeather;
+
+        public IVoiceController VoiceController { get; set; }
+
+        public WeatherModel(WeatherCurrentViewModel current, WeatherDayViewModel today,
+            WeatherDayViewModel tomorrow, WeatherWeekViewModel week)
+        {
+            currentWeather = current;
+            todaysWeather = today;
+            tomorrowsWeather = tomorrow;
+            weeksWeather = week;
+            currentlyVisible = currentWeather;
+            VoiceController = new WeatherVoiceController("Grammar\\weatherGrammar.xml", this);
+        }
 
         public void InitWeather(Location location)
         {
@@ -19,89 +39,105 @@ namespace SmartMirror.WeatherModule.Models
             UpdateWeeksWeather(location);
         }
 
-        public void HandleVoiceCommand(string command, string timeFrame, string city)
+        //There is currently only one type of weather voice command
+        //It is to show the weather of a certain time frame. Here we will simply
+        //Update which time frame is currently visible
+        public void HandleVoiceCommand(string timeFrame)
         {
-            Location location;
-            if (city.Length != 0)
+            //Turn off the currently displayed element.
+            currentlyVisible.Visible = Visibility.Collapsed;
+            //Update currentlyVisible weather item based on the time frame from the voice command.
+            switch (timeFrame)
             {
-                location = LocationService.GetDefaultLocation();  //LocationService.GetLocationFromCity(city);
+                case WeatherCommands.TIME_CURRENT:
+                    currentlyVisible = currentWeather;
+                    break;
+                case WeatherCommands.TIME_TODAY:
+                    currentlyVisible = todaysWeather;
+                    break;
+                case WeatherCommands.TIME_TOMORROW:
+                    currentlyVisible = tomorrowsWeather;
+                    break;
+                case WeatherCommands.TIME_WEEK:
+                    currentlyVisible = weeksWeather;
+                    break;
             }
-            else
+            //Turn the item that is supposed to be visible on
+            currentlyVisible.Visible = Visibility.Visible;
+        }
+
+        public void UpdateCurrentWeather(Location location)
+        {
+            //Fetch the new weather information from WeatherService
+            WeatherCurrent weather = WeatherService.FetchCurrentWeather(location);
+            
+            //Update the view model, currentWeather
+            currentWeather.Temperature = weather.Temperature.ToString("F0");
+            currentWeather.HighTemp = weather.HighTemperature.ToString("F0");
+            currentWeather.LowTemp = weather.LowTemperature.ToString("F0");
+            currentWeather.Location = location.City + ", " + location.State;
+            currentWeather.Date = weather.Date.ToString("M");
+            currentWeather.ReadTime = weather.ReadTime.ToString("g");
+            currentWeather.WeatherType = weather.WeatherType;
+            if (IconNeedsUpdate(currentWeather.CurrentIcon, weather.IconId))
             {
-                location = LocationService.GetDefaultLocation();
+                currentWeather.WeatherIcon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + weather.IconId + ".png"));
             }
-            if (WeatherCommands.CMD_SHOW.Equals(command))
+        }
+
+        public void UpdateTodaysWeather(Location location)
+        {
+            WeatherDay weather = WeatherService.FetchTodaysWeather(location);
+            ConvertWeatherDayToWeatherDayViewModel(weather, todaysWeather);
+        }
+
+        public void UpdateTomorrowsWeather(Location location)
+        {
+            WeatherDay weather = WeatherService.FetchTomorrowsWeather(location);
+            ConvertWeatherDayToWeatherDayViewModel(weather, tomorrowsWeather);
+        }
+
+        private void ConvertWeatherDayToWeatherDayViewModel(WeatherDay model, WeatherDayViewModel viewModel)
+        {
+            List<WeatherHourViewModel> hoursList = new List<WeatherHourViewModel>();
+            foreach (WeatherHour hour in model.WeatherDays)
             {
-                Debug.Write("Show ");
-                switch (timeFrame)
-                {
-                    case WeatherCommands.TIME_TODAY:
-                        WeatherCurrent weather = WeatherService.FetchCurrentWeather(location);
-                        break;
-                    case WeatherCommands.TIME_TOMORROW:
-                        Debug.WriteLine("TIME_TOMORROW: " + timeFrame);
-                        break;
-                    case WeatherCommands.TIME_WEEK:
-                        Debug.WriteLine("TIME_WEEK: " + timeFrame);
-                        break;
-                }
+                string temp = hour.Temperature.ToString("F0");
+                string time = hour.Time.ToString("h:mm tt");
+                BitmapImage icon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + hour.IconId + ".png"));
+                WeatherHourViewModel hourVM = new WeatherHourViewModel(time, temp, icon);
+                hoursList.Add(hourVM);
             }
-            else if (WeatherCommands.CMD_HIDE.Equals(command))
+            viewModel.WeatherHours = hoursList;
+            viewModel.Location = model.WeatherLocation.City + ", " + model.WeatherLocation.State;
+            viewModel.Date = model.Date.ToString("M");
+            viewModel.ReadTime = model.ReadTime.ToString("g");
+        }
+
+        public void UpdateWeeksWeather(Location location)
+        {
+            WeatherWeek weather = WeatherService.FetchWeeksWeather(location);
+            List<WeatherWeekDayViewModel> daysList = new List<WeatherWeekDayViewModel>();
+            foreach (WeatherWeekDay day in weather.WeatherDays)
             {
-                Debug.Write("Hide ");
-                switch (timeFrame)
-                {
-                    case WeatherCommands.TIME_TODAY:
-                        Debug.WriteLine("TIME_TODAY: " + timeFrame);
-                        break;
-                    case WeatherCommands.TIME_TOMORROW:
-                        Debug.WriteLine("TIME_TOMORROW: " + timeFrame);
-                        break;
-                    case WeatherCommands.TIME_WEEK:
-                        Debug.WriteLine("TIME_WEEK: " + timeFrame);
-                        break;
-                }
+                string high = day.HighTemperature.ToString("F0");
+                string low = day.LowTemperature.ToString("F0");
+                string date = day.Date.ToString("MM/dd");
+                BitmapImage icon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + day.IconId + ".png"));
+                WeatherWeekDayViewModel dayVM = new WeatherWeekDayViewModel(high, low, date, icon);
+                daysList.Add(dayVM);                
             }
+            weeksWeather.WeatherDays = daysList;
+            weeksWeather.Location = location.City + "," + location.State;
+            weeksWeather.DateRange = weather.StartDate.ToString("MM/dd") + " - " + weather.EndDate.ToString("MM/dd");
+            weeksWeather.ReadTime = weather.ReadTime.ToString("g");
         }
 
-        private void UpdateCurrentWeather(Location location)
+        //Used to determine if the weather icon on the model is the same as the icon
+        //on the view model. If they are different, this method returns true. Else, false.
+        private bool IconNeedsUpdate(string viewModel, string model)
         {
-            CurrentWeather = WeatherService.FetchCurrentWeather(location);
-        }
-
-        private void UpdateTodaysWeather(Location location)
-        {
-            TodaysWeather = WeatherService.FetchTodaysWether(location);
-        }
-
-        private void UpdateTomorrowsWeather(Location location)
-        {
-            TomorrowsWeather = WeatherService.FetchTomorrowsWeather(location);
-        }
-
-        private void UpdateWeeksWeather(Location location)
-        {
-            WeeksWeather = WeatherService.FetchWeeksWeather(location);
-        }
-
-        private void InitCurrentWeather()
-        {
-
-        }
-
-        private void InitTodaysWeather()
-        {
-
-        }
-
-        private void InitTomorrowsWeather()
-        {
-
-        }
-
-        private void InitWeeksWeather()
-        {
-
+            return !model.Equals(viewModel);
         }
     }
 }

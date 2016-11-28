@@ -29,6 +29,6 @@ namespace SmartMirror.MainModule
         public const string CMD_FOCUS = "FOCUS";
 
         //The key for this dictionary is the Module's 
-        public static Dictionary<string, IVoiceControlModule> Modules;
+        public static Dictionary<string, IVoiceController> Modules;
     }
 }

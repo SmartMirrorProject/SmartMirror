@@ -43,7 +43,7 @@ namespace SmartMirror.WeatherModule.Models
         //---------------------------------Today's Weather--------------------------------
         //--------------------------------------------------------------------------------
         //TODO set this method up to handle issues where the read fails.
-        public static WeatherDay FetchTodaysWether(Location location)
+        public static WeatherDay FetchTodaysWeather(Location location)
         {
             DaysWeatherData forecast = GetWeatherForecastData(location);
             WeatherDay today = null;
@@ -62,14 +62,14 @@ namespace SmartMirror.WeatherModule.Models
                 Date = DateTime.Today,
                 WeatherLocation = location
             };
-            //Iterate through all weather data retrieved and create BasicWeather objects
+            //Iterate through all weather data retrieved and create WeatherHour objects
             for (int i = 1; i < daysData.cnt; i++)
             {
                 DateTime date = UnixTimeStampToDateTime(daysData.list[i].dt);
                 //If the current result is for today, process it and store it in today
                 if (ValidTimeToday(date))
                 {
-                    BasicWeather weather = new BasicWeather
+                    WeatherHour weather = new WeatherHour
                     {
                         Temperature = daysData.list[i].main.temp,
                         IconId = daysData.list[i].weather[0].icon,
@@ -123,14 +123,14 @@ namespace SmartMirror.WeatherModule.Models
                 Date = DateTime.Today.AddDays(1),
                 WeatherLocation = location
             };
-            //Iterate through all weather data retrieved and create BasicWeather objects
+            //Iterate through all weather data retrieved and create WeatherHour objects
             for (int i = 1; i < daysData.cnt; i++)
             {
                 DateTime date = UnixTimeStampToDateTime(daysData.list[i].dt);
                 //If the current result is for tomorrow, process it and store it in Tomorrow
                 if (ValidTimeTomorrow(date))
                 {
-                    BasicWeather weather = new BasicWeather
+                    WeatherHour weather = new WeatherHour
                     {
                         Temperature = daysData.list[i].main.temp,
                         IconId = daysData.list[i].weather[0].icon,
@@ -174,30 +174,31 @@ namespace SmartMirror.WeatherModule.Models
             return week;
         }
 
+        //TODO this doesn't seem to update right at midnight, it will still retrieve yesterdays info for a while
+        //We will need to fetch 7 days and perform a check to ensure we are getting between tomorrow and the 5th day.
         private static WeatherWeek ProcessWeeksWeatherData(WeeksWeatherData daysData)
         {
             WeatherWeek week = new WeatherWeek(DateTime.Now)
             {
                 //Store tomorrow's date as 'long date' format: "Thursday, 10 April 2008"
-                StartDate = DateTime.Today.ToString("D"),
-                EndDate = DateTime.Today.AddDays(5).ToString("D")
+                StartDate = DateTime.Today.AddDays(1),
+                EndDate = DateTime.Today.AddDays(5)
             };
-            //Iterate through all weather data retrieved and create BasicWeather objects
+            //Iterate through all weather data retrieved, starting at 1 because it includes today
+            //and create WeatherHour objects for each
             for (int i = 1; i < daysData.cnt; i++)
             {
                 DateTime date = UnixTimeStampToDateTime(daysData.list[i].dt);
                 //If the current result is for today, process it and store it in today
-                if (ValidTimeToday(date))
+                WeatherWeekDay weather = new WeatherWeekDay()
                 {
-                    WeatherWeekDay weather = new WeatherWeekDay()
-                    {
-                        HighTemperature = daysData.list[i].temp.max,
-                        LowTemperature = daysData.list[i].temp.min,
-                        IconId = daysData.list[i].weather[0].icon,
-                        WeatherType = daysData.list[i].weather[0].main,
-                    };
-                    week.AddDay(weather);
-                }
+                    HighTemperature = daysData.list[i].temp.max,
+                    LowTemperature = daysData.list[i].temp.min,
+                    Date = date,
+                    IconId = daysData.list[i].weather[0].icon,
+                        
+                };
+                week.AddDay(weather);
             }
             return week;
         }
@@ -276,8 +277,9 @@ namespace SmartMirror.WeatherModule.Models
             {
                 //TODO implement code to get current location based on IP or data stored in Azure or user entered. Hardcoded to Orlando for now
                 //Request the JSON file from OpenWeatherMaps
+                //We want 5 days of forecast but this includes today so request 6 for cnt.
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get,
-                    ($"http://api.openweathermap.org/data/2.5/forecast/daily?id=" + "4167147" + "&units=imperial&appID=6eeb0ae7137df453623bb2cb436db19a"));
+                    ($"http://api.openweathermap.org/data/2.5/forecast/daily?id=" + "4167147" + "&units=imperial&cnt=6&appID=6eeb0ae7137df453623bb2cb436db19a"));
                 HttpClient client = new HttpClient();
                 //Parse the object from the JSON and return it
                 var response = client.SendAsync(request).Result;

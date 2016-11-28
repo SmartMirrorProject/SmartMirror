@@ -1,40 +1,142 @@
 ﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
 using SmartMirror.MainModule;
 using SmartMirror.WeatherModule.Models;
 
 namespace SmartMirror.WeatherModule.ViewModels
 {
-    public class WeatherCurrentViewModel : BindableBase
+    public class WeatherCurrentViewModel : BindableBase, IWeatherViewModel
     {
-        private WeatherCurrent weather;
-
-        public WeatherCurrentViewModel(WeatherCurrent weather)
+        public WeatherCurrentViewModel()
         {
-            SetWeather(weather);
-            WeatherIcon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + weather.IconId + ".png"));
+            string s = "Not Init";
+            Visible = Visibility.Visible;
+            Temperature = s;
+            HighTemp = s;
+            LowTemp = s;
+            Location = s;
+            Date = s;
+            ReadTime = s;
+            WeatherType = s;
+            CurrentIcon = "02d"; //This is just a default.
+            WeatherIcon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + CurrentIcon + ".png"));
         }
 
-        public String Temperature => "" + Math.Round(weather.Temperature);
-
-        public String HighTemp => "High: " + Math.Round(weather.HighTemperature) + "°";
-
-        public String LowTemp => "Low: " + Math.Round(weather.LowTemperature) + "°";
-
-        public String Location => weather.WeatherLocation.City + ", " + weather.WeatherLocation.State;
-
-        public String Date => weather.Date.ToString("D");
-
-        public String ReadTime => weather.ReadTime.ToString("t");
-
-        public String WeatherType => weather.WeatherType;
-
-        public BitmapImage WeatherIcon { get; }
-
-        public void SetWeather(WeatherCurrent weather)
+        public WeatherCurrentViewModel(string temp, string high, string low, string loc,
+            string date, string read, string type, string icon)
         {
-            if (null == weather) throw new ArgumentException("This class cannot be passed a null WeatherCurrent object.");
-            this.weather = weather;
+            Visible = Visibility.Visible;
+            Temperature = temp;
+            HighTemp = high;
+            LowTemp = low;
+            Location = loc;
+            Date = date;
+            ReadTime = read;
+            WeatherType = type;
+            CurrentIcon = icon;
+            WeatherIcon = new BitmapImage(new Uri("ms-appx:/Assets/Weather/" + icon + ".png"));
         }
+
+        private Visibility visibility;
+        public Visibility Visible
+        {
+            get { return visibility; }
+            set
+            {
+                visibility = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string temperature;
+        public string Temperature
+        {
+            get { return temperature; }
+            set
+            {
+                temperature = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string highTemp;
+        public string HighTemp
+        {
+            get { return highTemp; }
+            set
+            {
+                highTemp = "Hi: " + value + "°F";
+                OnPropertyChanged();
+            }
+        }
+
+        private string lowTemp;
+        public string LowTemp
+        {
+            get { return lowTemp; }
+            set
+            {
+                lowTemp = "Low: " + value + "°F";
+                OnPropertyChanged();
+            }
+        }
+
+        private string location;
+        public string Location
+        {
+            get { return location; }
+            set
+            {
+                location = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string date;
+        public string Date
+        {
+            get { return date; }
+            set
+            {
+                date = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string readTime;
+        public string ReadTime
+        {
+            get { return readTime; }
+            set
+            {
+                readTime = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string weatherType;
+        public string WeatherType
+        {
+            get { return weatherType; }
+            set
+            {
+                weatherType = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private BitmapImage weatherIcon;
+        public BitmapImage WeatherIcon
+        {
+            get { return weatherIcon; }
+            set
+            {
+                weatherIcon = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string CurrentIcon { get; set; }
     }
 }

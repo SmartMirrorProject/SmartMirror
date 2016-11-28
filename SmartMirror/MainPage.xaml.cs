@@ -12,7 +12,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using SmartMirror.ClockModule;
 using SmartMirror.LocationModule;
+using SmartMirror.VoiceControlModule;
 using SmartMirror.WeatherModule.Models;
 using SmartMirror.WeatherModule.ViewModels;
 
@@ -25,35 +27,102 @@ namespace SmartMirror
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private LocationService locationService;
+        private readonly LocationService locationService;
+
+
+        //Clock Variables
+        private readonly DispatcherTimer clockTimer;
+        private const long ClockRefreshRate = 1000L; //Every Second    
+        public ClockModel Clock;
+        public ClockViewModel CurrentTime;
 
         //Weather Model and ViewModels
-        private WeatherModel weatherModel;
+        private readonly DispatcherTimer weatherTimer;
+        private const long WeatherRefreshRate = (15L * 60L * 1000L); //Every 15 Minutes
+        //Weather timer should tick 12 times before week weather refreshes. This is 3 hours.
+        private int todaysWeatherCounter;
+        private const int TodaysWeatherRefresh = 12;
+        //Weather timer should tick 24 times before week weather refreshes. This is 6 hours.
+        private int tomorrowsWeatherCounter;
+        private const int TomorrowsWeatherRefresh = 24;
+        //Weather timer should tick 48 times before week weather refreshes. This is 12 hours.
+        private int weeksWeatherCounter;
+        private const int WeeksWeatherRefresh = 48;
+        public WeatherModel Weather;
         public WeatherCurrentViewModel CurrentWeather;
         public WeatherDayViewModel TodaysWeather;
         public WeatherDayViewModel TomorrowsWeather;
         public WeatherWeekViewModel WeeksWeather;
-        
+
+        //Voice Controller Variables
+        private readonly VoiceControlModel voiceController;
+        private readonly List<IVoiceControllableModule> voiceControlledModules;
+        private readonly DispatcherTimer voiceControlTimer;
+        private const long voiceControlRefreshRate = 500L; //Every half second
 
         public MainPage()
         {
             this.InitializeComponent();
+
+            //Init all timers
+            clockTimer = new DispatcherTimer();
+            weatherTimer = new DispatcherTimer();
+            voiceControlTimer = new DispatcherTimer();
+
+            voiceController = VoiceControlModel.Instance;
+            voiceController.InitializeSpeechRecognizer();
+            voiceControlTimer.Interval = TimeSpan.FromMilliseconds(voiceControlRefreshRate);
+            voiceControlTimer.Tick += VoiceControlTick;            
+
+            voiceControlledModules = new List<IVoiceControllableModule>();
+
             locationService = new LocationService("Orlando", "FL", "United States", "32817");
-            InitWeatherElements();
+            InitClock();
+            InitWeather();
+
+            List<IVoiceController> controllers = new List<IVoiceController>();
+            foreach (IVoiceControllableModule module in voiceControlledModules)
+            {
+                controllers.Add(module.VoiceController);
+            }
+            voiceController.LoadModulesAndStartProcessor(controllers);
+            voiceControlTimer.Start();
         }
 
-        private void InitWeatherElements()
+        public async void MainPage_Unloaded(object sender, object args)
         {
-            weatherModel = new WeatherModel();
-            weatherModel.InitWeather(locationService.DefaultLocation);
-            UpdateWeather();
+            voiceController.UnloadSpeechRecognizer();
         }
 
-        private void UpdateWeather()
+        private void InitClock()
         {
-            CurrentWeather = new WeatherCurrentViewModel(weatherModel.CurrentWeather);
-            TodaysWeather = new WeatherDayViewModel(weatherModel.TodaysWeather);
-            TomorrowsWeather = new WeatherDayViewModel(weatherModel.TomorrowsWeather);
+            CurrentTime = new ClockViewModel();
+            Clock = new ClockModel(CurrentTime);
+            clockTimer.Interval = TimeSpan.FromMilliseconds(ClockRefreshRate);
+            clockTimer.Tick += ClockTick;
+            clockTimer.Start();
+            voiceControlledModules.Add(Clock);
+        }
+
+        private void InitWeather()
+        {
+            //Create all necessary view models for weather
+            CurrentWeather = new WeatherCurrentViewModel();
+            TodaysWeather = new WeatherDayViewModel();
+            TomorrowsWeather = new WeatherDayViewModel();
+            WeeksWeather = new WeatherWeekViewModel();
+            //Init the weather model and give it a reference to all view models
+            Weather = new WeatherModel(CurrentWeather, TodaysWeather,
+                TomorrowsWeather, WeeksWeather);
+            Weather.InitWeather(locationService.DefaultLocation);
+            //Set the interval, tick handler, and then start the timer.
+            weatherTimer.Interval = TimeSpan.FromMilliseconds(WeatherRefreshRate);
+            weatherTimer.Tick += WeatherTick;
+            weatherTimer.Start();
+            todaysWeatherCounter = 0;
+            tomorrowsWeatherCounter = 0;
+            weeksWeatherCounter = 0;
+            voiceControlledModules.Add(Weather);
         }
 
         private void UpdateTravelTime()
@@ -84,7 +153,6 @@ namespace SmartMirror
                 {
                     if (!locationService.HomeAddress.StreetAddress1.Equals(HomeAddress.Text))
                     {
-                        UpdateWeather();
                         UpdateTravelTime();
                     }
                     locationService.HomeAddress = new Address(HomeCity.Text, HomeState.Text, "United States",
@@ -199,5 +267,49 @@ namespace SmartMirror
         //                btn.Content = "Result: NONE";
         //            }
         //        }
+
+        //------------------------------------------------------------------------------------------------
+        //-----------------------------------------Timer Ticks--------------------------------------------
+        //------------------------------------------------------------------------------------------------
+        private void ClockTick(object sender, object e)
+        {
+            Clock.UpdateTime();
+        }
+
+        private void WeatherTick(object sender, object e)
+        {
+            //Current weather is updated on every tick
+            Weather.UpdateCurrentWeather(locationService.DefaultLocation);
+            if (todaysWeatherCounter >= TodaysWeatherRefresh)
+            {
+                Weather.UpdateTodaysWeather(locationService.DefaultLocation);
+                todaysWeatherCounter = 0;
+            }
+            if (tomorrowsWeatherCounter >= TomorrowsWeatherRefresh)
+            {
+                Weather.UpdateTomorrowsWeather(locationService.DefaultLocation);
+                tomorrowsWeatherCounter = 0;
+            }
+            if (weeksWeatherCounter >= WeeksWeatherRefresh)
+            {
+                Weather.UpdateWeeksWeather(locationService.DefaultLocation);
+                weeksWeatherCounter = 0;
+            }
+            todaysWeatherCounter += 1;
+            tomorrowsWeatherCounter += 1;
+            weeksWeatherCounter += 1;
+        }
+
+        private void VoiceControlTick(object sender, object e)
+        {
+            foreach (IVoiceControllableModule module in voiceControlledModules)
+            {
+                if (module.VoiceController.HasCommands)
+                {
+                    module.VoiceController.ProcessVoiceCommand();
+                }
+            }
+        }
+
     }
 }

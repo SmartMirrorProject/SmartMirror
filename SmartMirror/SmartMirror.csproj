@@ -98,13 +98,15 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ClockModule\ClockCommands.cs" />
+    <Compile Include="ClockModule\ClockModel.cs" />
+    <Compile Include="ClockModule\ClockViewModel.cs" />
+    <Compile Include="ClockModule\ClockVoiceController.cs" />
     <Compile Include="LocationModule\Address.cs" />
     <Compile Include="LocationModule\Location.cs" />
     <Compile Include="LocationModule\LocationService.cs" />
     <Compile Include="MainModule\BindableBase.cs" />
     <Compile Include="MainModule\SmartMirrorCommands.cs" />
-    <Compile Include="MainModule\SmartMirrorModel.cs" />
-    <Compile Include="MainModule\ViewModelLocator.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -115,8 +117,10 @@
     <Compile Include="TravelTimeModule\TravelTimeService.cs" />
     <Compile Include="TravelTimeModule\TravelTimeViewModel.cs" />
     <Compile Include="TravelTimeModule\TravelTimeVoiceController.cs" />
-    <Compile Include="VoiceControlModule\IVoiceControlModule.cs" />
+    <Compile Include="VoiceControlModule\IVoiceControllableModule.cs" />
+    <Compile Include="VoiceControlModule\IVoiceController.cs" />
     <Compile Include="VoiceControlModule\VoiceControlModel.cs" />
+    <Compile Include="WeatherModule\ViewModels\IWeatherViewModel.cs" />
     <Compile Include="WeatherModule\WeatherView.xaml.cs">
       <DependentUpon>WeatherView.xaml</DependentUpon>
     </Compile>
@@ -128,7 +132,6 @@
     <Compile Include="WeatherModule\Models\WeatherDay.cs" />
     <Compile Include="WeatherModule\Models\WeatherModel.cs" />
     <Compile Include="WeatherModule\Models\WeatherService.cs" />
-    <Compile Include="WeatherModule\WeatherViewModel.cs" />
     <Compile Include="WeatherModule\Models\WeatherVoiceController.cs" />
     <Compile Include="WeatherModule\Models\WeatherWeek.cs" />
   </ItemGroup>
@@ -161,6 +164,7 @@
     <Content Include="Assets\Weather\01d.png" />
     <Content Include="Assets\Weather\11d.png" />
     <Content Include="Assets\Weather\11n.png" />
+    <Content Include="Grammar\clockGrammar.xml" />
     <Content Include="Grammar\smartMirrorGrammar.xml">
       <SubType>Designer</SubType>
     </Content>

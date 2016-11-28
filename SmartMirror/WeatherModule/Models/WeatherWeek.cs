@@ -8,8 +8,8 @@ namespace SmartMirror.WeatherModule.Models
     {
         public List<WeatherWeekDay> WeatherDays { get; }
         public Location WeatherLocation { get; set; }
-        public string StartDate { get; set; }
-        public string EndDate { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public DateTime ReadTime { get; }
 
         public WeatherWeek()
@@ -53,7 +53,6 @@ namespace SmartMirror.WeatherModule.Models
             {
                 HighTemperature = high,
                 LowTemperature = low,
-                WeatherType = weatherType,
                 IconId = iconID
             };
             WeatherDays[day] = dayOfWeek;
@@ -74,7 +73,7 @@ namespace SmartMirror.WeatherModule.Models
     {
         public double HighTemperature { get; set; }
         public double LowTemperature { get; set; }
+        public DateTime Date { get; set; }
         public string IconId { get; set; }
-        public string WeatherType { get; set; }
     }
 }

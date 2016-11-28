@@ -20,7 +20,7 @@ namespace SmartMirror.VoiceControlModule
         private const string TAG_CMD = "cmd";
         private const string TAG_TIME_FRAME = "timeFrame";
 
-        private static Dictionary<string, IVoiceControlModule> activeModules = new Dictionary<string, IVoiceControlModule>();
+        private static Dictionary<string, IVoiceController> activeModules = new Dictionary<string, IVoiceController>();
 
         private SpeechRecognizer _recognizer;
 
@@ -35,16 +35,16 @@ namespace SmartMirror.VoiceControlModule
             _recognizer.ContinuousRecognitionSession.ResultGenerated += RecognizerResultGenerated;
         }
 
-        public async void LoadModulesAndStartProcessor(List<IVoiceControlModule> modules)
+        public async void LoadModulesAndStartProcessor(List<IVoiceController> modules)
         {
-            foreach (IVoiceControlModule module in modules)
+            foreach (IVoiceController module in modules)
             {
                 await LoadVoiceControlModule(module);
             }
             StartSpeechRecognizer();
         }
 
-        public async Task<bool> LoadVoiceControlModule(IVoiceControlModule module)
+        public async Task<bool> LoadVoiceControlModule(IVoiceController module)
         {
             //If the module is not loaded.
             if (!IsModuleLoaded(module))
@@ -66,12 +66,12 @@ namespace SmartMirror.VoiceControlModule
         }
 
 
-        public bool IsModuleLoaded(IVoiceControlModule module)
+        public bool IsModuleLoaded(IVoiceController module)
         {
             return activeModules.ContainsValue(module);
         }
 
-        public async void StartSpeechRecognizer()
+        private async void StartSpeechRecognizer()
         {
             // Compile the loaded GrammarFiles
             SpeechRecognitionCompilationResult compilationResult = await _recognizer.CompileConstraintsAsync();
@@ -107,21 +107,22 @@ namespace SmartMirror.VoiceControlModule
                                                       SpeechContinuousRecognitionResultGeneratedEventArgs args)
         {
             // Output debug strings
-            Debug.WriteLine(args.Result.Status);
-            Debug.WriteLine(args.Result.Text);
+//            Debug.WriteLine(args.Result.Status);
+//            Debug.WriteLine(args.Result.Text);
 
             //This is how we will tell which module grammar the command came from
-            Debug.WriteLine("Grammar File Constraint Tag: " + args.Result.Constraint.Tag);
+//            Debug.WriteLine("Grammar File Constraint Tag: " + args.Result.Constraint.Tag);
+//
+//            Debug.WriteLine(args.Result.Confidence.ToString());
+//            Debug.WriteLine("Confidence 0 = High, 1 = Medium, 2 = Low");
+//
+//            int count = args.Result.SemanticInterpretation.Properties.Count;
+//            Debug.WriteLine("Count: " + count);
+//            Debug.WriteLine("Tag: " + args.Result.Constraint.Tag);
 
-            Debug.WriteLine(args.Result.Confidence.ToString());
-            Debug.WriteLine("Confidence 0 = High, 1 = Medium, 2 = Low");
-
-            int count = args.Result.SemanticInterpretation.Properties.Count;
-            Debug.WriteLine("Count: " + count);
-            Debug.WriteLine("Tag: " + args.Result.Constraint.Tag);
-
-            IVoiceControlModule commandsModule = activeModules[args.Result.Constraint.Tag];
-            commandsModule.ProcessVoiceCommand(args.Result);
+            //Receive the commands and pass it to the appropriate module to handle
+            IVoiceController commandsModule = activeModules[args.Result.Constraint.Tag];
+            commandsModule.EnqueueCommand(args.Result);
         }
 
 
@@ -129,7 +130,7 @@ namespace SmartMirror.VoiceControlModule
         // Debug changes to state of the recognizer for test purposes
         private void RecognizerStateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
         {
-            Debug.WriteLine("Speech recognizer state: " + args.State.ToString());
+            //Debug.WriteLine("Speech recognizer state: " + args.State.ToString());
         }
 
         public async Task<SpeechRecognitionGrammarFileConstraint> CreateGrammarFromFile(string file, string key)

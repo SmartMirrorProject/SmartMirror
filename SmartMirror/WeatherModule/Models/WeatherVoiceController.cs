@@ -5,54 +5,50 @@ using SmartMirror.VoiceControlModule;
 
 namespace SmartMirror.WeatherModule.Models
 {
-    class WeatherVoiceController : IVoiceControlModule
+    public class WeatherVoiceController : IVoiceController
     {
         public bool IsVoiceControlLoaded { get; set; }
         public bool IsVoiceControlEnabled { get; set; }
+        public bool HasCommands { get; private set; }
         public string VoiceControlKey { get; }
         public string GrammarFilePath { get; }
         public SpeechRecognitionGrammarFileConstraint Grammar { get; set; }
+        private readonly WeatherModel weatherModel;
+        private Queue<SpeechRecognitionResult> CommandsReceived; 
 
-        public WeatherVoiceController(string grammarFilePath)
+        public WeatherVoiceController(string grammarFilePath, WeatherModel model)
         {
             IsVoiceControlLoaded = false;
             IsVoiceControlEnabled = false;
             VoiceControlKey = "weather";
             GrammarFilePath = grammarFilePath;
+            weatherModel = model;
+            HasCommands = false;
+            CommandsReceived = new Queue<SpeechRecognitionResult>();
         }
 
         /// <summary>
         /// Receive a voice recognition result and handle logic based on command.
         /// </summary>
-        public void ProcessVoiceCommand(SpeechRecognitionResult command)
+        public void ProcessVoiceCommand()
         {
-            IReadOnlyDictionary<string, IReadOnlyList<string>> tags = command.SemanticInterpretation.Properties;
-            string cmd = tags.ContainsKey(WeatherCommands.TAG_CMD) ? tags[WeatherCommands.TAG_CMD][0] : "";
-            string timeFrame = tags.ContainsKey(WeatherCommands.TAG_TIME) ? tags[WeatherCommands.TAG_TIME][0] : "";
-            switch (cmd)
+            if (CommandsReceived.Count > 0)
             {
-                case WeatherCommands.CMD_SHOW:
-                    Debug.WriteLine("CMD_SHOW: " + cmd);
-                    break;
-                case WeatherCommands.CMD_HIDE:
-                    Debug.WriteLine("CMD_HIDE: " + cmd);
-                    break;
-                default:
-                    Debug.WriteLine("An error occured, unhandled voice command: " + command.Text);
-                    break;
+                SpeechRecognitionResult command = CommandsReceived.Dequeue();
+                IReadOnlyDictionary<string, IReadOnlyList<string>> tags = command.SemanticInterpretation.Properties;
+                string timeFrame = tags.ContainsKey(WeatherCommands.TAG_TIME) ? tags[WeatherCommands.TAG_TIME][0] : "";
+                weatherModel.HandleVoiceCommand(timeFrame);
             }
-            switch (timeFrame)
+            if (CommandsReceived.Count == 0)
             {
-                case WeatherCommands.TIME_TODAY:
-                    Debug.WriteLine("TIME_TODAY: " + timeFrame);
-                    break;
-                case WeatherCommands.TIME_TOMORROW:
-                    Debug.WriteLine("TIME_TOMORROW: " + timeFrame);
-                    break;
-                case WeatherCommands.TIME_WEEK:
-                    Debug.WriteLine("TIME_WEEK: " + timeFrame);
-                    break;
+                HasCommands = false;
             }
+        }
+
+        public void EnqueueCommand(SpeechRecognitionResult result)
+        {
+            CommandsReceived.Enqueue(result);
+            HasCommands = true;
         }
     }
 }
