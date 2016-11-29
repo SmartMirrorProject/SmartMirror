@@ -24,10 +24,5 @@ namespace SmartMirror.ClockModule
         {
             Time = "Time is not initialized.";
         }
-
-        public ClockViewModel(String time)
-        {
-            Time = time;
-        }
     }
 }

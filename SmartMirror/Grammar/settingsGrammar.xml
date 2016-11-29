@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<grammar
+  version="1.0"
+  xml:lang="en-US"
+  root="voiceCommands"
+  xmlns="http://www.w3.org/2001/06/grammar"
+  tag-format="semantics/1.0">
+
+  <rule id="voiceCommands">
+    <item>
+      <ruleref uri="#settingsCommands"/>
+      <tag>out.settingsCommand=rules.settingsCommands;</tag>
+    </item>
+  </rule>
+
+  <rule id="settingsCommands">
+    <item>
+      <item> mirror </item>
+      <item>
+        <ruleref uri="#saveCloseActions"/>
+        <tag>out.cmd=rules.saveCloseActions;</tag>
+      </item>
+      <item> settings </item>
+    </item>
+  </rule>
+
+  <!--     Save/Close Actions     -->
+  <rule id="saveCloseActions">
+    <one-of>
+      <item>
+        save <tag> out="SAVE"; </tag>
+      </item>
+      <item>
+        close <tag> out="CLOSE"; </tag>
+      </item>
+    </one-of>
+  </rule>
+</grammar>

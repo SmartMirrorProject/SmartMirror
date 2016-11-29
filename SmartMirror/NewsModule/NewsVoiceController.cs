@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
-using Windows.Media.SpeechRecognition;
 using SmartMirror.VoiceControlModule;
+using Windows.Media.SpeechRecognition;
 
-namespace SmartMirror.WeatherModule.Models
+namespace SmartMirror.NewsModule
 {
-    public class WeatherVoiceController : IVoiceController
+    class NewsVoiceController : IVoiceController
     {
         public bool IsVoiceControlLoaded { get; set; }
         public bool IsVoiceControlEnabled { get; set; }
@@ -13,16 +12,17 @@ namespace SmartMirror.WeatherModule.Models
         public string VoiceControlKey { get; }
         public string GrammarFilePath { get; }
         public SpeechRecognitionGrammarFileConstraint Grammar { get; set; }
-        private readonly WeatherModel weatherModel;
-        private readonly Queue<SpeechRecognitionResult> CommandsReceived; 
+        private readonly NewsModel newsModel;
+        private Queue<SpeechRecognitionResult> CommandsReceived;
 
-        public WeatherVoiceController(string grammarFilePath, WeatherModel model)
+
+        public NewsVoiceController(string grammarFilePath, NewsModel model)
         {
             IsVoiceControlLoaded = false;
             IsVoiceControlEnabled = false;
-            VoiceControlKey = "weather";
+            VoiceControlKey = "news";
             GrammarFilePath = grammarFilePath;
-            weatherModel = model;
+            newsModel = model;
             HasCommands = false;
             CommandsReceived = new Queue<SpeechRecognitionResult>();
         }
@@ -36,8 +36,9 @@ namespace SmartMirror.WeatherModule.Models
             {
                 SpeechRecognitionResult command = CommandsReceived.Dequeue();
                 IReadOnlyDictionary<string, IReadOnlyList<string>> tags = command.SemanticInterpretation.Properties;
-                string timeFrame = tags.ContainsKey(WeatherCommands.TAG_TIME) ? tags[WeatherCommands.TAG_TIME][0] : "";
-                weatherModel.HandleVoiceCommand(timeFrame);
+                string cmd = tags.ContainsKey(NewsCommands.TAG_CMD) ? tags[NewsCommands.TAG_CMD][0] : "";
+                string type = tags.ContainsKey(NewsCommands.TAG_TYPE) ? tags[NewsCommands.TAG_TYPE][0] : "";
+                newsModel.HandleVoiceCommand(cmd, type);
             }
             if (CommandsReceived.Count == 0)
             {

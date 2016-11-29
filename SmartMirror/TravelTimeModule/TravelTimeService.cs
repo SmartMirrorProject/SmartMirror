@@ -11,10 +11,10 @@ namespace SmartMirror.TravelTimeModule
 {
     class TravelTimeService
     {
-        public TravelTimeData FetchTravelTime(string origin, string destination)
+        public static TravelTimeData FetchTravelTime(string origin, string destination)
         {
             TravelTimeJSON data = GetTravelTimeData(origin, destination);
-            TravelTimeData travelTime = new TravelTimeData(DateTime.Now, origin, destination)
+            TravelTimeData travelTime = new TravelTimeData(DateTime.Now)
             {
                 TravelDistance = data.rows[0].elements[0].distance.text,
                 TravelTime = data.rows[0].elements[0].duration.text
@@ -22,7 +22,7 @@ namespace SmartMirror.TravelTimeModule
             return travelTime;
         }
 
-        private TravelTimeJSON GetTravelTimeData(string origin, string dest)
+        private static TravelTimeJSON GetTravelTimeData(string origin, string dest)
         {
             try
             {

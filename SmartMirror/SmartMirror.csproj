@@ -92,31 +92,45 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\newsIcon50.png" />
+    <Content Include="Grammar\newsGrammar.xml" />
+    <Content Include="Settings\smart_mirror_settings.txt" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ClockModule\ClockCommands.cs" />
     <Compile Include="ClockModule\ClockModel.cs" />
     <Compile Include="ClockModule\ClockViewModel.cs" />
-    <Compile Include="ClockModule\ClockVoiceController.cs" />
     <Compile Include="LocationModule\Address.cs" />
     <Compile Include="LocationModule\Location.cs" />
     <Compile Include="LocationModule\LocationService.cs" />
     <Compile Include="MainModule\BindableBase.cs" />
     <Compile Include="MainModule\SmartMirrorCommands.cs" />
+    <Compile Include="MainModule\SmartMirrorModel.cs" />
+    <Compile Include="MainModule\SmartMirrorVoiceController.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NewsModule\NewsCommands.cs" />
+    <Compile Include="NewsModule\NewsData.cs" />
+    <Compile Include="NewsModule\NewsHeadline.cs" />
+    <Compile Include="NewsModule\NewsModel.cs" />
+    <Compile Include="NewsModule\NewsService.cs" />
+    <Compile Include="NewsModule\NewsViewModel.cs" />
+    <Compile Include="NewsModule\NewsVoiceController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TravelTimeModule\TravelTimeCommands.cs" />
+    <Compile Include="Settings\SettingsCommands.cs" />
+    <Compile Include="Settings\SettingsData.cs" />
+    <Compile Include="Settings\SettingsModel.cs" />
+    <Compile Include="Settings\SettingsService.cs" />
+    <Compile Include="Settings\SettingsViewModel.cs" />
+    <Compile Include="Settings\SettingsVoiceController.cs" />
     <Compile Include="TravelTimeModule\TravelTimeData.cs" />
     <Compile Include="TravelTimeModule\TravelTimeModel.cs" />
     <Compile Include="TravelTimeModule\TravelTimeService.cs" />
     <Compile Include="TravelTimeModule\TravelTimeViewModel.cs" />
-    <Compile Include="TravelTimeModule\TravelTimeVoiceController.cs" />
     <Compile Include="VoiceControlModule\IVoiceControllableModule.cs" />
     <Compile Include="VoiceControlModule\IVoiceController.cs" />
     <Compile Include="VoiceControlModule\VoiceControlModel.cs" />
@@ -165,6 +179,7 @@
     <Content Include="Assets\Weather\11d.png" />
     <Content Include="Assets\Weather\11n.png" />
     <Content Include="Grammar\clockGrammar.xml" />
+    <Content Include="Grammar\settingsGrammar.xml" />
     <Content Include="Grammar\smartMirrorGrammar.xml">
       <SubType>Designer</SubType>
     </Content>

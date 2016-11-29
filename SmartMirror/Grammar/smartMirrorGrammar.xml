@@ -7,31 +7,41 @@
   tag-format="semantics/1.0">
 
   <rule id="voiceCommands">
-    <one-of>
       <item>
-        <ruleref uri="#onOffCommands"/>
-        <tag>out.displayCommand=rules.onOffCommands;</tag>
+        <ruleref uri="#smartMirrorCommands"/>
+        <tag>out.smartMirrorCommand=rules.smartMirrorCommands;</tag>
       </item>
-      <item>
-        <ruleref uri="#loadUnloadCommands"/>
-        <tag>out.moduleCommand=rules.loadUnloadCommands;</tag>
-      </item>
-    </one-of>
   </rule>
 
-  <!--     On/Off Commands     -->
-  <rule id="onOffCommands">
+  <!--    Smnart Mirror Commands    -->
+  <rule id="smartMirrorCommands">
     <item>
       <item> mirror </item>
-      <item>
-        <ruleref uri="#onOffCommandActions" />
-        <tag> out.cmd=rules.latest(); </tag>
-      </item>
+      <one-of>
+        <!-- ON/OFF -->
+        <item>
+          <item>
+            <ruleref uri="#onOffCommands" />
+            <tag> out.cmd=rules.latest(); </tag>
+          </item>
+        </item>
+        <!-- SHOW/HIDE Settings/Sensors -->
+        <item>
+          <item>
+            <ruleref uri="#showHideActions" />
+            <tag> out.cmd=rules.latest(); </tag>
+          </item>
+          <item>
+            <ruleref uri="#modules" />
+            <tag> out.module=rules.latest(); </tag>
+          </item>
+        </item>
+      </one-of>
     </item>
-  </rule>
+  </rule>  
 
   <!--     On/Off Actions     -->
-  <rule id="onOffCommandActions">
+  <rule id="onOffCommands">
     <one-of>
       <item>
         on <tag> out="ON"; </tag>
@@ -42,34 +52,14 @@
     </one-of>
   </rule>
 
-  <!--     Load/Unload Commands     -->
-  <rule id="loadUnloadCommands">
-    <item> mirror </item>
-    <item>
-      <ruleref uri="#loadUnloadActions"/>
-      <tag> out.cmd=rules.latest(); </tag>
-    </item>
-    <item>
-      <ruleref uri="#modules"/>
-      <tag> out.module=rules.latest(); </tag>
-    </item>
-    <item> module </item>
-  </rule>
-
-  <!--     Load/Unload Actions     -->
-  <rule id="loadUnloadActions">
+  <!--     Show/Hide Actions     -->
+  <rule id="showHideActions">
     <one-of>
       <item>
-        load <tag> out="ENABLE"; </tag>
+         show <tag> out="SHOW"; </tag>
       </item>
       <item>
-        unload <tag> out="DISABLE"; </tag>
-      </item>
-      <item>
-        enable <tag> out="ENABLE"; </tag>
-      </item>
-      <item>
-        disable <tag> out="DISABLE"; </tag>
+         hide <tag> out="HIDE"; </tag>
       </item>
     </one-of>
   </rule>
@@ -78,10 +68,31 @@
   <rule id="modules">
     <one-of>
       <item>
-        weather <tag> out="WEATHER"; </tag>
+        settings <tag> out="SETTINGS"; </tag>
       </item>
       <item>
-        calendar <tag> out="CALENDAR" </tag>
+        setting <tag> out="SETTINGS"; </tag>
+      </item>
+      <item>
+        sensors <tag> out="SENSORS" </tag>
+      </item>
+      <item>
+        sensor info <tag> out="SENSORS" </tag>
+      </item>
+      <item>
+        sensor data <tag> out="SENSORS" </tag>
+      </item>
+      <item>
+        diagnostic <tag> out="SENSORS" </tag>
+      </item>
+      <item>
+        diagnostics <tag> out="SENSORS" </tag>
+      </item>
+      <item>
+        transit <tag> out="TRAVEL" </tag>
+      </item>
+      <item>
+        travel time <tag> out="TRAVEL" </tag>
       </item>
     </one-of>
   </rule>

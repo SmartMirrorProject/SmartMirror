@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SmartMirror.TravelTimeModule
 {
-    class TravelTimeViewModel
+    public class TravelTimeViewModel
     {
     }
 }

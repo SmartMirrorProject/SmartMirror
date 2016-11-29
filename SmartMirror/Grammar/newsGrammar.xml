@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<grammar
+  version="1.0"
+  xml:lang="en-US"
+  root="voiceCommands"
+  xmlns="http://www.w3.org/2001/06/grammar"
+  tag-format="semantics/1.0">
+
+  <rule id="voiceCommands">
+    <item>
+      <ruleref uri="#newsCommands"/>
+      <tag>out.newsCommand=rules.newsCommands;</tag>
+    </item>
+  </rule>
+
+  <rule id="newsCommands">
+    <item>
+      <item> mirror </item>
+      <item>
+        <ruleref uri="#showHideCommands" />
+        <tag> out.cmd=rules.latest(); </tag>
+      </item>
+      <item>
+        <ruleref uri="#typeActions" />
+        <tag> out.type=rules.latest(); </tag>
+      </item>
+    </item>
+    <item> news </item>
+  </rule>
+
+  <!--  Target For Command  -->
+  <rule id="showHideCommands">
+    <one-of>
+      <item>
+        show <tag> out="SHOW"; </tag>
+      </item>
+      <item>
+        hide <tag> out="HIDE"; </tag>
+      </item>
+    </one-of>
+  </rule>
+
+  <!--  Target For Command  -->
+  <rule id="typeActions">
+    <one-of>
+      <item>
+        news <tag> out="NEWS"; </tag>
+      </item>
+      <item>
+        top <tag> out="TOP"; </tag>
+      </item>
+      <item>
+        us <tag> out="US"; </tag>
+      </item>
+      <item>
+        business <tag> out="BUSINESS"; </tag>
+      </item>
+      <item>
+        politics <tag> out="POLITICS"; </tag>
+      </item>
+      <item>
+        technology <tag> out="TECHNOLOGY"; </tag>
+      </item>
+      <item>
+        entertainment <tag> out="ENTERTAINMENT"; </tag>
+      </item>
+    </one-of>
+  </rule>
+
+</grammar>

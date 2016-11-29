@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Capture;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -14,6 +15,10 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using SmartMirror.ClockModule;
 using SmartMirror.LocationModule;
+using SmartMirror.MainModule;
+using SmartMirror.NewsModule;
+using SmartMirror.Settings;
+using SmartMirror.TravelTimeModule;
 using SmartMirror.VoiceControlModule;
 using SmartMirror.WeatherModule.Models;
 using SmartMirror.WeatherModule.ViewModels;
@@ -29,6 +34,9 @@ namespace SmartMirror
     {
         private readonly LocationService locationService;
 
+        public SmartMirrorModel SmartMirror;
+
+        public SettingsViewModel Settings;
 
         //Clock Variables
         private readonly DispatcherTimer clockTimer;
@@ -60,6 +68,15 @@ namespace SmartMirror
         private readonly DispatcherTimer voiceControlTimer;
         private const long voiceControlRefreshRate = 500L; //Every half second
 
+        //TravelTime Model and View Model
+        private TravelTimeModel travelTimeModel;
+        public TravelTimeViewModel TravelTime;
+
+        //News Model and View Models
+        //News Model and ViewModels
+        public NewsModel NewsModel;
+        public NewsViewModel Headlines;
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -77,8 +94,18 @@ namespace SmartMirror
             voiceControlledModules = new List<IVoiceControllableModule>();
 
             locationService = new LocationService("Orlando", "FL", "United States", "32817");
+
+            //Init the settings
+            Settings = new SettingsViewModel();
+            SettingsModel settings = new SettingsModel(Settings);
+            voiceControlledModules.Add(settings);
+
+            SmartMirror = new SmartMirrorModel(settings);
+            voiceControlledModules.Add(SmartMirror);
+
             InitClock();
             InitWeather();
+            InitNewsElements();
 
             List<IVoiceController> controllers = new List<IVoiceController>();
             foreach (IVoiceControllableModule module in voiceControlledModules)
@@ -97,11 +124,10 @@ namespace SmartMirror
         private void InitClock()
         {
             CurrentTime = new ClockViewModel();
-            Clock = new ClockModel(CurrentTime);
+            Clock = new ClockModel(CurrentTime, SmartMirror);
             clockTimer.Interval = TimeSpan.FromMilliseconds(ClockRefreshRate);
             clockTimer.Tick += ClockTick;
             clockTimer.Start();
-            voiceControlledModules.Add(Clock);
         }
 
         private void InitWeather()
@@ -125,6 +151,14 @@ namespace SmartMirror
             voiceControlledModules.Add(Weather);
         }
 
+        private void InitNewsElements()
+        {
+            Headlines = new NewsViewModel();
+            NewsModel = new NewsModel(Headlines);
+            NewsModel.UpdateNews("cnn_topstories.rss");
+            voiceControlledModules.Add(NewsModel);
+        }
+
         private void UpdateTravelTime()
         {
             if (null != locationService.HomeAddress)
@@ -142,54 +176,54 @@ namespace SmartMirror
             }
         }
 
-        private async void ShowAddressContentDialog(object sender, RoutedEventArgs e)
-        {
-            var btn = sender as Button;
-            var result = await AddressContentDialog.ShowAsync();
-            //If okay was pressed, attempt to save all the data in the Text Blocks
-            if (ContentDialogResult.Primary == result)
-            {
-                if (HomeAddress.Text.Length > 0)
-                {
-                    if (!locationService.HomeAddress.StreetAddress1.Equals(HomeAddress.Text))
-                    {
-                        UpdateTravelTime();
-                    }
-                    locationService.HomeAddress = new Address(HomeCity.Text, HomeState.Text, "United States",
-                        HomeZipCode.Text)
-                    {
-                        StreetAddress1 = HomeAddress.Text
-                    };
-
-                }
-
-                if (WorkAddress.Text.Length > 0)
-                {
-                    if (!locationService.WorkAddress.StreetAddress1.Equals(WorkAddress.Text))
-                    {
-                        UpdateTravelTime();
-                    }
-                    locationService.WorkAddress = new Address(WorkCity.Text, WorkState.Text, "United States",
-                        WorkZipCode.Text)
-                    {
-                        StreetAddress1 = WorkAddress.Text
-                    };
-                }
-
-                if (SchoolAddress.Text.Length > 0)
-                {
-                    if (!locationService.SchoolAddress.StreetAddress1.Equals(SchoolAddress.Text))
-                    {
-                        UpdateTravelTime();
-                    }
-                    locationService.SchoolAddress = new Address(SchoolCity.Text, SchoolState.Text, "United States",
-                        SchoolZipCode.Text)
-                    {
-                        StreetAddress1 = SchoolAddress.Text
-                    };
-                }
-            }
-        }
+//        private async void ShowAddressContentDialog(object sender, RoutedEventArgs e)
+//        {
+//            var btn = sender as Button;
+//            var result = await AddressContentDialog.ShowAsync();
+//            //If okay was pressed, attempt to save all the data in the Text Blocks
+//            if (ContentDialogResult.Primary == result)
+//            {
+//                if (HomeAddress.Text.Length > 0)
+//                {
+//                    if (!locationService.HomeAddress.StreetAddress1.Equals(HomeAddress.Text))
+//                    {
+//                        UpdateTravelTime();
+//                    }
+//                    locationService.HomeAddress = new Address(HomeCity.Text, HomeState.Text, "United States",
+//                        HomeZipCode.Text)
+//                    {
+//                        StreetAddress1 = HomeAddress.Text
+//                    };
+//
+//                }
+//
+//                if (WorkAddress.Text.Length > 0)
+//                {
+//                    if (!locationService.WorkAddress.StreetAddress1.Equals(WorkAddress.Text))
+//                    {
+//                        UpdateTravelTime();
+//                    }
+//                    locationService.WorkAddress = new Address(WorkCity.Text, WorkState.Text, "United States",
+//                        WorkZipCode.Text)
+//                    {
+//                        StreetAddress1 = WorkAddress.Text
+//                    };
+//                }
+//
+//                if (SchoolAddress.Text.Length > 0)
+//                {
+//                    if (!locationService.SchoolAddress.StreetAddress1.Equals(SchoolAddress.Text))
+//                    {
+//                        UpdateTravelTime();
+//                    }
+//                    locationService.SchoolAddress = new Address(SchoolCity.Text, SchoolState.Text, "United States",
+//                        SchoolZipCode.Text)
+//                    {
+//                        StreetAddress1 = SchoolAddress.Text
+//                    };
+//                }
+//            }
+//        }
 
         //        private async void ShowAddressContentDialog( object sender, RoutedEventArgs e)
         //        {

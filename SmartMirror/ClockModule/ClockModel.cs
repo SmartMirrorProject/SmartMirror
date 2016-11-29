@@ -1,49 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SmartMirror.VoiceControlModule;
+using SmartMirror.MainModule;
 
 namespace SmartMirror.ClockModule
 {
-    public class ClockModel : IVoiceControllableModule
+    public class ClockModel
     {
-        private ClockViewModel ViewModel;
-        public bool MilitaryTime { get; set; }
+        private readonly ClockViewModel viewModel;
+        private readonly SmartMirrorModel mainModel;
 
-        public IVoiceController VoiceController { get; set; }
-
-        public ClockModel(ClockViewModel viewModel)
-        {            
-            MilitaryTime = false;
-            InitClockViewModel(viewModel);
-            VoiceController = new ClockVoiceController("Grammar\\clockGrammar.xml", this);
-        }
-
-        private void InitClockViewModel(ClockViewModel viewModel)
+        public ClockModel(ClockViewModel vm, SmartMirrorModel mirror)
         {
-            ViewModel = viewModel;
-            ViewModel.Time = DateTime.Now.ToString("h:mm");
+            mainModel = mirror;
+            viewModel = vm;
+            UpdateTime();
         }
 
         public void UpdateTime()
         {
-            ViewModel.Time = DateTime.Now.ToString(!MilitaryTime ? "h:mm" : "HH:mm");
-        }
-
-        public void HandleVoiceCommand(string format)
-        {
-            if (ClockCommands.FORMAT_12HR.Equals(format))
-            {
-                MilitaryTime = false;
-                UpdateTime();
-            }
-            else if (ClockCommands.FORMAT_24HR.Equals(format))
-            {
-                MilitaryTime = true;
-                UpdateTime();
-            }
+            bool military = mainModel.Settings.IsClockMilitary.Value;
+            viewModel.Time = DateTime.Now.ToString(military ? "HH:mm" : "h:mm");
         }
     }
 }

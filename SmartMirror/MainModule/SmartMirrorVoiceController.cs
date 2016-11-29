@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.Media.SpeechRecognition;
+using SmartMirror.Settings;
 using SmartMirror.VoiceControlModule;
 
-namespace SmartMirror.WeatherModule.Models
+namespace SmartMirror.MainModule
 {
-    public class WeatherVoiceController : IVoiceController
+    class SmartMirrorVoiceController : IVoiceController
     {
         public bool IsVoiceControlLoaded { get; set; }
         public bool IsVoiceControlEnabled { get; set; }
@@ -13,31 +17,29 @@ namespace SmartMirror.WeatherModule.Models
         public string VoiceControlKey { get; }
         public string GrammarFilePath { get; }
         public SpeechRecognitionGrammarFileConstraint Grammar { get; set; }
-        private readonly WeatherModel weatherModel;
-        private readonly Queue<SpeechRecognitionResult> CommandsReceived; 
+        private readonly SmartMirrorModel model;
+        private readonly Queue<SpeechRecognitionResult> CommandsReceived;
 
-        public WeatherVoiceController(string grammarFilePath, WeatherModel model)
+        public SmartMirrorVoiceController(string grammarFilePath, SmartMirrorModel model)
         {
             IsVoiceControlLoaded = false;
             IsVoiceControlEnabled = false;
-            VoiceControlKey = "weather";
+            VoiceControlKey = "smartMirror";
             GrammarFilePath = grammarFilePath;
-            weatherModel = model;
+            this.model = model;
             HasCommands = false;
             CommandsReceived = new Queue<SpeechRecognitionResult>();
         }
 
-        /// <summary>
-        /// Receive a voice recognition result and handle logic based on command.
-        /// </summary>
         public void ProcessVoiceCommand()
         {
             if (CommandsReceived.Count > 0)
             {
                 SpeechRecognitionResult command = CommandsReceived.Dequeue();
                 IReadOnlyDictionary<string, IReadOnlyList<string>> tags = command.SemanticInterpretation.Properties;
-                string timeFrame = tags.ContainsKey(WeatherCommands.TAG_TIME) ? tags[WeatherCommands.TAG_TIME][0] : "";
-                weatherModel.HandleVoiceCommand(timeFrame);
+                string cmd = tags.ContainsKey(SmartMirrorCommands.TAG_CMD) ? tags[SmartMirrorCommands.TAG_CMD][0] : "";
+                string module = tags.ContainsKey(SmartMirrorCommands.TAG_MODULE) ? tags[SmartMirrorCommands.TAG_MODULE][0] : "";
+                model.HandleVoiceCommand(cmd, module);
             }
             if (CommandsReceived.Count == 0)
             {

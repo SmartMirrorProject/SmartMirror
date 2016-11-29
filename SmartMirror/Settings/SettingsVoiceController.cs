@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Windows.Media.SpeechRecognition;
 using SmartMirror.VoiceControlModule;
-using SmartMirror.WeatherModule.Models;
 
-namespace SmartMirror.ClockModule
+namespace SmartMirror.Settings
 {
-    class ClockVoiceController : IVoiceController
+    class SettingsVoiceController : IVoiceController
     {
         public bool IsVoiceControlLoaded { get; set; }
         public bool IsVoiceControlEnabled { get; set; }
@@ -17,17 +12,16 @@ namespace SmartMirror.ClockModule
         public string VoiceControlKey { get; }
         public string GrammarFilePath { get; }
         public SpeechRecognitionGrammarFileConstraint Grammar { get; set; }
-        private readonly ClockModel clockModel;
-        private Queue<SpeechRecognitionResult> CommandsReceived;
+        private readonly SettingsModel settingsModel;
+        private readonly Queue<SpeechRecognitionResult> CommandsReceived;
 
-
-        public ClockVoiceController(string grammarFilePath, ClockModel model)
+        public SettingsVoiceController(string grammarFilePath, SettingsModel model)
         {
             IsVoiceControlLoaded = false;
             IsVoiceControlEnabled = false;
-            VoiceControlKey = "clock";
+            VoiceControlKey = "settings";
             GrammarFilePath = grammarFilePath;
-            clockModel = model;
+            settingsModel = model;
             HasCommands = false;
             CommandsReceived = new Queue<SpeechRecognitionResult>();
         }
@@ -41,8 +35,8 @@ namespace SmartMirror.ClockModule
             {
                 SpeechRecognitionResult command = CommandsReceived.Dequeue();
                 IReadOnlyDictionary<string, IReadOnlyList<string>> tags = command.SemanticInterpretation.Properties;
-                string format = tags.ContainsKey(ClockCommands.TAG_FORMAT) ? tags[ClockCommands.TAG_FORMAT][0] : "";
-                clockModel.HandleVoiceCommand(format);
+                string cmd = tags.ContainsKey(SettingsCommands.TAG_CMD) ? tags[SettingsCommands.TAG_CMD][0] : "";
+                settingsModel.HandleVoiceCommand(cmd);
             }
             if (CommandsReceived.Count == 0)
             {
