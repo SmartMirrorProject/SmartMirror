@@ -14,6 +14,10 @@ namespace SmartMirror.TravelTimeModule
         public static TravelTimeData FetchTravelTime(string origin, string destination)
         {
             TravelTimeJSON data = GetTravelTimeData(origin, destination);
+            if (null == data)
+            {
+                return null;
+            }
             TravelTimeData travelTime = new TravelTimeData(DateTime.Now)
             {
                 TravelDistance = data.rows[0].elements[0].distance.text,

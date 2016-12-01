@@ -60,6 +60,9 @@
       </item>
       <item>
         technology <tag> out="TECHNOLOGY"; </tag>
+      </item>      
+      <item>
+        tech <tag> out="TECHNOLOGY"; </tag>
       </item>
       <item>
         entertainment <tag> out="ENTERTAINMENT"; </tag>

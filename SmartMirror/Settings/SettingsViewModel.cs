@@ -59,6 +59,17 @@ namespace SmartMirror.Settings
             }
         }
 
+        private string ipAddress;
+        public string IpAddress
+        {
+            get { return ipAddress; }
+            set
+            {
+                ipAddress = value;
+                OnPropertyChanged();
+            }
+        }
+
         private string homeAddress;
         public string HomeAddress
         {
@@ -139,7 +150,11 @@ namespace SmartMirror.Settings
         private string workZip;
         public string WorkZip
         {
-            get { return workZip; }
+            get
+            {
+                return workZip;
+                
+            }
             set
             {
                 workZip = value;
@@ -148,7 +163,6 @@ namespace SmartMirror.Settings
         }
 
         private string workStartTime;
-
         public string WorkStartTime
         {
             get { return workStartTime; }
@@ -158,6 +172,5 @@ namespace SmartMirror.Settings
                 OnPropertyChanged();
             }
         }
-
     }
 }

@@ -1,4 +1,8 @@
-﻿using Windows.UI.Xaml;
+﻿using Windows.Networking;
+using Windows.Networking.Connectivity;
+using Windows.UI.Xaml;
+using SmartMirror.LocationModule;
+using SmartMirror.TravelTimeModule;
 using SmartMirror.VoiceControlModule;
 
 namespace SmartMirror.Settings
@@ -10,14 +14,29 @@ namespace SmartMirror.Settings
 
         public IVoiceController VoiceController { get; set; }
 
+        public TravelTimeModel TravelTime { get; set; }
+
         public bool? IsClockMilitary => settings.MilitaryTime;
         public string HomeAddress => settings.HomeAddress.FullAddress;
         public string WorkAddress => settings.WorkAddress.FullAddress;
         public string StartTime => settings.StartTime;
 
+        public bool? UseNewSerialInit => settings.NewSerialOption;
+
         public SettingsModel(SettingsViewModel vm)
         {
             viewModel = vm;
+            foreach (HostName localHostName in NetworkInformation.GetHostNames())
+            {
+                if (localHostName.IPInformation != null)
+                {
+                    if (localHostName.Type == HostNameType.Ipv4)
+                    {
+                        viewModel.IpAddress = localHostName.ToString();
+                        break;
+                    }
+                }
+            }
             VoiceController = new SettingsVoiceController("Grammar\\settingsGrammar.xml", this);
             UpdateSettings();
         }
@@ -41,7 +60,9 @@ namespace SmartMirror.Settings
         {
             if (SettingsCommands.CMD_SAVE.Equals(cmd))
             {
-                SettingsService.Save(viewModel);
+                UpdateData();
+                SettingsService.Save(settings);
+                TravelTime.UpdateTravelTime(settings.HomeAddress.FullAddress, settings.WorkAddress.FullAddress);
                 settings.MilitaryTime = viewModel.MilitaryTime;
                 viewModel.Visible = Visibility.Collapsed;
             }
@@ -50,6 +71,20 @@ namespace SmartMirror.Settings
                 UpdateSettings();
                 viewModel.Visible = Visibility.Collapsed;
             }
+        }
+
+        private void UpdateData()
+        {
+            settings.MilitaryTime = settings.MilitaryTime;
+            settings.HomeAddress = new Address(viewModel.HomeCity, viewModel.HomeState, "US", viewModel.HomeZip)
+            {
+                StreetAddress = viewModel.HomeAddress
+            };
+            settings.WorkAddress = new Address(viewModel.WorkCity, viewModel.WorkState, "US", viewModel.WorkZip)
+            {
+                StreetAddress = viewModel.WorkAddress
+            };
+            settings.StartTime = viewModel.WorkStartTime;
         }
 
         public void TurnOn()

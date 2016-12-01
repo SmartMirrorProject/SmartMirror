@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.Capture;
+using Windows.Media.Playback;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -17,6 +20,7 @@ using SmartMirror.ClockModule;
 using SmartMirror.LocationModule;
 using SmartMirror.MainModule;
 using SmartMirror.NewsModule;
+using SmartMirror.SensorModule;
 using SmartMirror.Settings;
 using SmartMirror.TravelTimeModule;
 using SmartMirror.VoiceControlModule;
@@ -37,6 +41,20 @@ namespace SmartMirror
         public SmartMirrorModel SmartMirror;
 
         public SettingsViewModel Settings;
+
+        //Sensor Variables
+        public SensorViewModel SensorsDisplay;
+        public SensorModel Sensors;
+        private readonly DispatcherTimer sensorTimer;
+        private const long SensorRefreshRate = 250L;
+
+        //Music
+        private readonly DispatcherTimer musicTimer;
+        private const long MusicRefreshRate = 1000L;
+
+        //Travel Time
+        public TravelTimeViewModel TravelTimeDisplay;
+        public TravelTimeModel TravelTime;
 
         //Clock Variables
         private readonly DispatcherTimer clockTimer;
@@ -68,14 +86,12 @@ namespace SmartMirror
         private readonly DispatcherTimer voiceControlTimer;
         private const long voiceControlRefreshRate = 500L; //Every half second
 
-        //TravelTime Model and View Model
-        private TravelTimeModel travelTimeModel;
-        public TravelTimeViewModel TravelTime;
-
         //News Model and View Models
         //News Model and ViewModels
         public NewsModel NewsModel;
         public NewsViewModel Headlines;
+
+        public MusicViewModel Music;
 
         public MainPage()
         {
@@ -85,6 +101,8 @@ namespace SmartMirror
             clockTimer = new DispatcherTimer();
             weatherTimer = new DispatcherTimer();
             voiceControlTimer = new DispatcherTimer();
+            sensorTimer = new DispatcherTimer();
+            musicTimer = new DispatcherTimer();
 
             voiceController = VoiceControlModel.Instance;
             voiceController.InitializeSpeechRecognizer();
@@ -100,12 +118,24 @@ namespace SmartMirror
             SettingsModel settings = new SettingsModel(Settings);
             voiceControlledModules.Add(settings);
 
-            SmartMirror = new SmartMirrorModel(settings);
+            Music = new MusicViewModel
+            {
+                Artist = "",
+                Track = ""
+            };
+            SmartMirror = new SmartMirrorModel(settings, Music);
             voiceControlledModules.Add(SmartMirror);
 
+            InitSensors();
             InitClock();
             InitWeather();
             InitNewsElements();
+            InitTravelTime();
+            settings.TravelTime = TravelTime;
+
+            musicTimer.Interval = TimeSpan.FromMilliseconds(MusicRefreshRate);
+            musicTimer.Tick += MusicTick;
+            musicTimer.Start();
 
             List<IVoiceController> controllers = new List<IVoiceController>();
             foreach (IVoiceControllableModule module in voiceControlledModules)
@@ -114,7 +144,7 @@ namespace SmartMirror
             }
             voiceController.LoadModulesAndStartProcessor(controllers);
             voiceControlTimer.Start();
-        }
+        }        
 
         public async void MainPage_Unloaded(object sender, object args)
         {
@@ -151,12 +181,41 @@ namespace SmartMirror
             voiceControlledModules.Add(Weather);
         }
 
+        private void InitSensors()
+        {            
+            SensorsDisplay = new SensorViewModel();
+            Sensors = new SensorModel(SensorsDisplay, SmartMirror);
+            Sensors.InitSensorModel();
+            sensorTimer.Interval = TimeSpan.FromMilliseconds(SensorRefreshRate);
+            sensorTimer.Tick += SensorTick;
+            sensorTimer.Start();
+            if (SmartMirror.Settings.UseNewSerialInit == null)
+            {
+                SerialService.InitSerialService(Sensors);
+            }
+            else if (SmartMirror.Settings.UseNewSerialInit.Value)
+            {
+                SerialService.InitSerialServiceNew(Sensors);
+            }
+            else
+            {
+                SerialService.InitSerialService(Sensors);
+            }
+        }
+
         private void InitNewsElements()
         {
             Headlines = new NewsViewModel();
             NewsModel = new NewsModel(Headlines);
             NewsModel.UpdateNews("cnn_topstories.rss");
             voiceControlledModules.Add(NewsModel);
+        }
+
+        private void InitTravelTime()
+        {
+            TravelTimeDisplay = new TravelTimeViewModel();
+            TravelTime = new TravelTimeModel(TravelTimeDisplay);
+            TravelTime.UpdateTravelTime(SmartMirror.Settings.HomeAddress, SmartMirror.Settings.WorkAddress);
         }
 
         private void UpdateTravelTime()
@@ -345,5 +404,17 @@ namespace SmartMirror
             }
         }
 
+        private void SensorTick(object sender, object e)
+        {
+            Sensors.ProcessSensorData(SmartMirror.IsDisplayOn());
+        }
+
+        private void MusicTick(object sender, object e)
+        {
+            if (SmartMirror.IsMusicPlaying() && SmartMirror.SongEnded())
+            {
+                SmartMirror.NextSong();
+            }
+        }
     }
 }

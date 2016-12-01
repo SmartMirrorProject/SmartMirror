@@ -19,19 +19,31 @@ namespace SmartMirror.Settings
                 MilitaryTime = bool.Parse(textData[0]),
                 HomeAddress = new Address(textData[1]),
                 WorkAddress = new Address(textData[2]),
-                StartTime = textData[3]
+                StartTime = textData[3],
+                NewSerialOption = false
             };
+            if (textData.Length > 4)
+            {
+                try
+                {
+                    data.NewSerialOption = bool.Parse(textData[4]);
+                }
+                catch (Exception e)
+                {
+                    //Ignore this, it's just a hidden option and the bool is set to false above automatically anyways.
+                }
+            }
             return data;
         }
 
-        public static async void Save(SettingsViewModel viewModel)
+        public static async void Save(SettingsData data)
         {
-            SettingsData data = ConvertViewModelToData(viewModel);
-            string content = data.MilitaryTime.ToString() + "\n";
+            string content = data.MilitaryTime + "\n";
             content += data.HomeAddress.FullAddress + "\n";
             content += data.WorkAddress.FullAddress + "\n";
-            content += data.StartTime;
-            bool result = await SaveStringToFile(content);
+            content += data.StartTime + "\n";
+            content += data.NewSerialOption.ToString();
+            await SaveStringToFile(content);
         }
 
         private static SettingsData ConvertViewModelToData(SettingsViewModel vm)

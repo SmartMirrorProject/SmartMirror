@@ -5,18 +5,24 @@
     xmlns:local="using:SmartMirror"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:gif="using:XamlAnimatedGif"
     mc:Ignorable="d"
-    DataContext="{Binding RelativeSource={RelativeSource Self}}">
-
-    <Grid x:Name="DisplayArea" Background="Black">
-        <StackPanel Visibility="{x:Bind SmartMirror.Display, Mode=OneWay}" Height="{Binding ActualHeight, ElementName=DisplayArea}"
-                    Width="{Binding ActualWidth, ElementName=DisplayArea}">
+    DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    >
+    <Grid Background="Black">
+        <Grid x:Name="DisplayArea" Background="Black" Visibility="{x:Bind SmartMirror.Display, Mode=OneWay}">
             <!-- Clock -->
-            <TextBlock Text="{x:Bind CurrentTime.Time, Mode=OneWay}" HorizontalAlignment="Left" Height="200" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="400"
-                FontFamily="Century Gothic" FontSize="125" Foreground="Snow" TextAlignment="Left"/>
+            <StackPanel Margin="25,25,0,0">
+                <TextBlock Text="{x:Bind CurrentTime.Time, Mode=OneWay}" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="400"
+            FontFamily="Century Gothic" FontSize="125" Foreground="Snow" TextAlignment="Left"/>
+                <TextBlock Text="Commute Details"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="45"/>
+                <TextBlock Text="{x:Bind TravelTimeDisplay.Time, Mode=OneWay}"  FontSize="50" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="75"/>
+                <TextBlock Text="{x:Bind TravelTimeDisplay.Distance, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50"/>
+            </StackPanel>
+            
 
             <!-- Current Weather -->
-            <StackPanel x:Name="CurrentWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,15,0" Visibility="{x:Bind CurrentWeather.Visible, Mode=OneWay}">
+            <StackPanel x:Name="CurrentWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,25,25,0" Visibility="{x:Bind CurrentWeather.Visible, Mode=OneWay}">
                 <TextBlock Text="{x:Bind CurrentWeather.Location, Mode=OneWay}" FontSize="60" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="63"/>
                 <TextBlock Text="{x:Bind CurrentWeather.Date, Mode=OneWay}" FontSize="25" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="28"/>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -31,7 +37,7 @@
             </StackPanel>
 
             <!-- Todays Weather -->
-            <StackPanel x:Name="TodaysWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,15,0" Orientation="Vertical" Visibility="{x:Bind TodaysWeather.Visible, Mode=OneWay}">
+            <StackPanel x:Name="TodaysWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,25,25,0" Orientation="Vertical" Visibility="{x:Bind TodaysWeather.Visible, Mode=OneWay}">
                 <TextBlock Text="{x:Bind TodaysWeather.Location, Mode=OneWay}" FontSize="60" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="64"/>
                 <TextBlock Text="{x:Bind TodaysWeather.Date, Mode=OneWay}" FontSize="25" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="28"/>
                 <ListView ItemsSource="{x:Bind TodaysWeather.WeatherHours, Mode=OneWay}">
@@ -53,7 +59,7 @@
             </StackPanel>
 
             <!-- Tomorrow's Weather -->
-            <StackPanel x:Name="TomorrowsWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,15,0" Orientation="Vertical" Visibility="{x:Bind TomorrowsWeather.Visible, Mode=OneWay}">
+            <StackPanel x:Name="TomorrowsWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,25,25,0" Orientation="Vertical" Visibility="{x:Bind TomorrowsWeather.Visible, Mode=OneWay}">
                 <TextBlock Text="{x:Bind TomorrowsWeather.Location, Mode=OneWay}" FontSize="60" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="63"/>
                 <TextBlock Text="{x:Bind TomorrowsWeather.Date, Mode=OneWay}" FontSize="25" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="28"/>
                 <ListView ItemsSource="{x:Bind TomorrowsWeather.WeatherHours, Mode=OneWay}">
@@ -74,7 +80,7 @@
                 </ListView>
             </StackPanel>
 
-            <StackPanel x:Name="WeeksWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,15,0" Orientation="Vertical" Visibility="{x:Bind WeeksWeather.Visible, Mode=OneWay}">
+            <StackPanel x:Name="WeeksWeatherBlock" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,25,25,0" Orientation="Vertical" Visibility="{x:Bind WeeksWeather.Visible, Mode=OneWay}">
                 <TextBlock Text="{x:Bind WeeksWeather.Location, Mode=OneWay}" FontSize="60" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="63"/>
                 <TextBlock Text="{x:Bind WeeksWeather.DateRange, Mode=OneWay}" FontSize="25" FontFamily="Century Gothic" Foreground="Snow" TextAlignment="Center" Height="28"/>
                 <ListView ItemsSource="{x:Bind WeeksWeather.WeatherDays, Mode=OneWay}">
@@ -95,65 +101,99 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </StackPanel>
-            
-            <StackPanel x:Name="SettingsBlock" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,0,15,0" Orientation="Vertical" Visibility="{x:Bind Settings.Visible, Mode=OneWay}">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,0">
-                    <TextBlock x:Name="MilitaryTime" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
-                                   HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Military Time:" Width="92"/>
-                    <CheckBox Height="32" Width="20" MinHeight="16" MinWidth="16" VerticalAlignment="Top" Padding="0" RequestedTheme="Light" BorderBrush="Snow" Background="Snow" IsChecked="{x:Bind Path=Settings.MilitaryTime, Mode=TwoWay}"/>
-                </StackPanel>
-                <StackPanel Height="64">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
-                        <TextBlock x:Name="HomeAddressTextBlock" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
-                                   HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Home Address:" Width="92"/>
-                        <TextBox Text="{x:Bind Path=Settings.HomeAddress, Mode=TwoWay}" PlaceholderText="Address" Width="208"
-                                 Foreground="Snow"/>
+
+            <StackPanel x:Name="SettingsBlock" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,15,0" Orientation="Vertical">
+                <StackPanel Visibility="{x:Bind Settings.Visible, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,0">
+                        <TextBlock x:Name="MilitaryTime" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
+                                HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Military Time:" Width="92"/>
+                        <CheckBox Height="32" Width="20" MinHeight="16" MinWidth="16" VerticalAlignment="Top" Padding="0" RequestedTheme="Light" BorderBrush="Snow" Background="Snow" IsChecked="{x:Bind Path=Settings.MilitaryTime, Mode=TwoWay}"/>
                     </StackPanel>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBox Text="{x:Bind Path=Settings.HomeCity, Mode=TwoWay}" PlaceholderText="City" Foreground="Snow"/>
-                            <TextBox Text="{x:Bind Path=Settings.HomeState, Mode=TwoWay}" PlaceholderText="State" Foreground="Snow"/>
-                            <TextBox Text="{x:Bind Path=Settings.HomeZip, Mode=TwoWay}" PlaceholderText="Zip Code" Foreground="Snow"/>
+                    <StackPanel Height="64">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                            <TextBlock x:Name="HomeAddressTextBlock" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
+                                HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Home Address:" Width="92"/>
+                            <TextBox Text="{x:Bind Path=Settings.HomeAddress, Mode=TwoWay}" PlaceholderText="Address" Width="208"
+                                Foreground="Snow"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBox Text="{x:Bind Path=Settings.HomeCity, Mode=TwoWay}" PlaceholderText="City" Foreground="Snow"/>
+                                <TextBox Text="{x:Bind Path=Settings.HomeState, Mode=TwoWay}" PlaceholderText="State" Foreground="Snow"/>
+                                <TextBox Text="{x:Bind Path=Settings.HomeZip, Mode=TwoWay}" PlaceholderText="Zip Code" Foreground="Snow"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
-                </StackPanel>
-                <StackPanel Height="64">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
-                        <TextBlock x:Name="WorkAddressTextBlock" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
-                                   HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Home Address:" Width="92"/>
-                        <TextBox Text="{x:Bind Path=Settings.WorkAddress, Mode=TwoWay}" PlaceholderText="Address" Width="208"
-                                 Foreground="Snow"/>
-                    </StackPanel>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBox Text="{x:Bind Path=Settings.WorkCity, Mode=TwoWay}" PlaceholderText="City" Foreground="Snow"/>
-                            <TextBox Text="{x:Bind Path=Settings.WorkState, Mode=TwoWay}" PlaceholderText="State" Foreground="Snow"/>
-                            <TextBox Text="{x:Bind Path=Settings.WorkZip, Mode=TwoWay}" PlaceholderText="Zip Code" Foreground="Snow"/>
+                    <StackPanel Height="64">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                            <TextBlock x:Name="WorkAddressTextBlock" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
+                                HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Home Address:" Width="92"/>
+                            <TextBox Text="{x:Bind Path=Settings.WorkAddress, Mode=TwoWay}" PlaceholderText="Address" Width="208" Foreground="Snow"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBox Text="{x:Bind Path=Settings.WorkCity, Mode=TwoWay}" PlaceholderText="City" Foreground="Snow"/>
+                                <TextBox Text="{x:Bind Path=Settings.WorkState, Mode=TwoWay}" PlaceholderText="State" Foreground="Snow"/>
+                                <TextBox Text="{x:Bind Path=Settings.WorkZip, Mode=TwoWay}" PlaceholderText="Zip Code" Foreground="Snow"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                        <TextBlock x:Name="WorkStartTimeTextBlock" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
+                                HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Work Start Time:"/>
+                        <TextBox Text="{x:Bind Path=Settings.WorkStartTime, Mode=TwoWay}" PlaceholderText="Start Time" Width="208"
+                                Foreground="Snow"/>
+                    </StackPanel>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
-                    <TextBlock x:Name="WorkStartTimeTextBlock" VerticalAlignment="Center" Foreground="Snow" FontSize="12"
-                                   HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" Text="Work Start Time:"/>
-                    <TextBox Text="{x:Bind Path=Settings.WorkStartTime, Mode=TwoWay}" PlaceholderText="Start Time" Width="208"
-                                 Foreground="Snow"/>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{x:Bind Path=SmartMirror.SensorVisibility, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Path=Settings.IpAddress, Mode=OneWay}" Foreground="Snow"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Path=SensorsDisplay.Temperature, Mode=OneWay}" Foreground="Snow"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Path=SensorsDisplay.Humidity, Mode=OneWay}" Foreground="Snow"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Path=SensorsDisplay.LightSensor, Mode=OneWay}" Foreground="Snow"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Path=SensorsDisplay.LongRangeSensor, Mode=OneWay}" Foreground="Snow"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Path=SensorsDisplay.GestureControl, Mode=OneWay}" Foreground="Snow"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
-        </StackPanel>
 
-        <!-- News Stack Panel -->
-        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="50,550,0,0" Visibility="{x:Bind Headlines.Visible, Mode=OneWay}">
-            <TextBlock Text="{x:Bind Headlines.Headline1, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="910"/>
-            <TextBlock Text="{x:Bind Headlines.Headline2, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="910"/>
-            <TextBlock Text="{x:Bind Headlines.Headline3, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="910"/>
-        </StackPanel>
+            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="25,0,0,25" Orientation="Vertical">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="{x:Bind SmartMirror.MusicVisibility, Mode=OneWay}">
+                    <Image Source="ms-appx:///Assets/nowPlaying.png" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="100"/>
+                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,0,0,0" Visibility="{x:Bind SmartMirror.MusicVisibility, Mode=OneWay}">
+                        <TextBlock Text="{x:Bind Music.Track, Mode=OneWay}"  FontSize="50" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="75" Width="910"/>
+                        <TextBlock Text="{x:Bind Music.Artist, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="910"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="{x:Bind Headlines.Visible, Mode=OneWay}">
+                    <!-- News Icon Stack Panel -->
+                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,30,0,0">
+                        <Image Source="ms-appx:///Assets/newsIcon50.png" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="50"/>
+                        <Image Source="ms-appx:///Assets/newsIcon50.png" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="50"/>
+                        <Image Source="ms-appx:///Assets/newsIcon50.png" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="50"/>
+                    </StackPanel>
+                    <!-- News Stack Panel -->
+                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,0">
+                        <TextBlock Text="{x:Bind Headlines.Headline1, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="910"/>
+                        <TextBlock Text="{x:Bind Headlines.Headline2, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="910"/>
+                        <TextBlock Text="{x:Bind Headlines.Headline3, Mode=OneWay}"  FontSize="30" Foreground="Snow" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="50" Width="910"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
 
-        <!-- News Icon Stack Panel -->
-        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,550,0,0" Visibility="{x:Bind Headlines.Visible, Mode=OneWay}">
-            <Image Source="ms-appx:///Assets/newsIcon50.png" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="50" Width="710"/>
-            <Image Source="ms-appx:///Assets/newsIcon50.png" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="50" Width="710"/>
-            <Image Source="ms-appx:///Assets/newsIcon50.png" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Height="50" Width="710"/>
-        </StackPanel>
+
+
 
         <!--        <StackPanel VerticalAlignment="Center"-->
 <!--                    HorizontalAlignment="Center">-->

@@ -9,6 +9,8 @@ namespace SmartMirror.Settings
 
         }
 
+        public bool? NewSerialOption { get; set; }
+
         public bool? MilitaryTime { get; set; }
 
         public Address HomeAddress { get; set; }
